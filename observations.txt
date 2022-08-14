@@ -1,0 +1,94 @@
+//Jai Maa Bhavani
+
+
+**Credentials:
+
+Game: Board of Conquest(BOC)
+Inspirations: From an online game - "Call Of War", where people war over other nations and conquer the globe over a map.
+Time taken to make this game: 30 hrs over 4 days.
+
+
+**A brief overview of the game:
+
+This game is a 2 Player game, one alloted the color RED and the other is alloted BLUE.
+Each Round consists of 1 turn each to both the players.
+At the start each player is alloted a base at opposite corners of the board.
+The player shall conquer tiles and expand their empire.
+When the enemy nations face off, the player can decide to send troops for attacking onto an enemy tile.
+This game continues till one of the player vanishes from the map.
+The terminal serves as a newspaper and gives information about the war and conquest.
+
+
+**Rules of the game:
+
+1) There are 64 tiles in the map. 1 base tile is alloted to both the players at the start.
+2) User should make use of only mouse to choose which tile to send backup/troops for war.
+3) Player can conquer only the neighbouring tiles(tiles which are sharing atleast one corner with the occupied territories of the player) in one turn.
+4) If the player choses an invalid tile, he/she loses the turn and the turn passes on to the other player.
+5) When one tile is clicked upon, it receives backup from all neighboring friend bases(Half from each friend base)
+6) When a player decides to send army for attack into an enemy tile:
+	a) The attack is successful if the army sent is greater than enemy's army stationed at the tile.
+	b) The attack fails if the army sent is less than enemy's army stationed at the tile.
+	c) The attack neutralises if the army count is equal, and that particular tile is now in no one's occupation.
+7) The game continues till one of the player, loses control over all its lands. The other player is declared victorious.
+
+
+**Game Abstractions and Inheritance:
+
+This week,w e continue to make use of the vast library of FLTK and make a user interface and develop a game.
+
+I first created a class Point, which has two int variables x and y to store the ID of the tile.
+The public function bool check_adjacency(Point p) checks whether the tile whose ID is p, is a neighboring tile to this ID or not.
+The public function bool check_similarity(Point p) checks whether the values of x and y of p and this are same or not.
+
+Next the class tile, is an abstract class inherited from Fl_Button.
+It has protected variables x,y,w,h which are the arguments to be sent to the Fl_Button constructor.
+The member Point tile_id stores the ID of the Tile.
+The member int score, stores the army count on the Tile.
+
+We now define a function void cb_tile(Tile* w) which is used to update the label(which shows the score) on the Tile after each round.
+Here we make use of osstringstream and string classes to convert an int to const char*, as the label() function takes in const char* as argument.
+
+Now, making a new class - Player which stores the information related to a player.
+It has private variable int id, Fl_Color col which stores the id and color of the player.
+The vector<Point> tile_id is a vector of Point storing the id of occupied tiles.
+The vector<Tile*> tiles is a vector of Tile* storing addresses of occupied tiles.
+The Tile* Progress is the Operational Tile which shows the current status of the game.
+The public member function void add_base(arguments) sets the base for the Player at the start of the game, and assigns it the id and color.
+Member function void add_land(arguments) adds a land to the list of occpuied territories of the player by pushing back the address of occupied tile into tiles, and its ID into tile_id.
+int find_index(Point p) returns the index at which Point p is present in the vector of tile_id.
+void remove_land(Point p) removes the land from the control of the player bby erasing the id and the tile from the vectors.
+vector<Tile*> backup_from_vicinity(Point &p) returns the vector of addresses of tiles which are neighboring to the tile with id p.
+int get_id() returns the id of the player.
+void declare_victory() changes the label on the Progress tile to declare victory of the player.
+void change_label() changes the label on the Progress tile to show whose turn it is now.
+
+We then globally declare array of two Players to use them in subsequent classes.
+
+Class Operational Tile is inherited from class Tile. It has private variables int type to recognize the tile.
+The int handle(int e) function is overriden, which ensures that clicking on the tile labled "Quit" closes the screen and ends the program.
+
+Class Operational Tile is also inherited from class Tile. It has private variables col and king which stores the color the the tile(RED if occupied by player 1, BLUE if occupied by Player 2, and GREEN if neutral), and the address to the ruler of the tile respectively.
+The constructor passes the call to the constructor of the base class, and sets the col to FL_GREEN and king to NULL(Since, neutral at start), and also assigns the tile id.
+The public member functin void change_color(Fl_Color C) changes the color of tile to color C.
+Next comes the most important and longest part of the program code, the overriding of int handle(int e):
+	1) Upon mouse click, the interior of the handle function is executed
+ 	2) It first gets the vector of Neighboring friend bases from the Player. If the vector is empty, the function ends, and the turn is passed onto the next player.
+	3) If there are non zero neighboring friend bases, then the backup is sent into the tile.
+	4) If the tile is a neutral tile, then it is directly occupied by the player, and the score of the neighboring tiles and the new tiles are updated by calling the cb_tile() function. Also the color of the new tile to changed to the color of the player by using the change_color() function. 
+	5) If the tile is an enemy tile, then whoever has more army in that tile, the tile will be under their control with new score as the difference of scores. It may be possible that the army of both the players in that tile balance out each other, in that case the tile becomes neutral and the color is changed back to GREEN.
+	6) If the tile is a friend tile, then it receives backup from its neighboring friend bases and the score is updated.
+	7) After the 2nd Player's turn, a round is completed and the score is incremented, with the one having more lands has more army production.
+The function set_king_base() sets base tiles to each of the players.
+
+IMPORTANT: The function static void Winquit() doesn't let you close the window by clicking on the cross button.
+
+The int main() creates a window, and also 64 gaming tiles dynamically. It also creates 3 Operational Tiles, one for progress, other for quitting, and the third one for showing the name of game.
+
+Tile at the top left corner is set as base for Player 1, and that at bottom right corner is set as base for Player 2.
+The show() function shows all the widgets on the screen.
+The callback for window is also set.
+
+The function Fl::run() ensures the program runs until manually exited.
+
+So these are the abstractions used in this program, also I have made use of inheritance from the class Fl_Button and overrided the virtual pure functions.
